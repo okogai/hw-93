@@ -1,0 +1,19 @@
+import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
+import mongoose from "mongoose";
+import {Album} from "./album.schema";
+
+@Schema()
+export class Track {
+    @Prop({required: true})
+    title: string;
+    @Prop({required: true, type: mongoose.Schema.Types.ObjectId, ref: "Album"})
+    album: Album;
+    @Prop({required: true})
+    duration: string;
+    @Prop({required: true})
+    trackNumber: number;
+    @Prop()
+    youtubeLink: string;
+}
+
+export const TrackSchema = SchemaFactory.createForClass(Track);
