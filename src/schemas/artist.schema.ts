@@ -1,5 +1,7 @@
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
 
+export type ArtistDocument = Artist & Document;
+
 @Schema()
 export class Artist {
     @Prop( { required: true })
