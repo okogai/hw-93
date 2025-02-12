@@ -1,4 +1,4 @@
 export class CreateArtistDto {
-    name: string;
-    photo: string;
+  name: string;
+  photo: string;
 }
