@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Post, Req, UseGuards} from '@nestjs/common';
+import {Body, Controller, Post, Req, UseGuards} from '@nestjs/common';
 import {InjectModel} from "@nestjs/mongoose";
 import {User, UserDocument} from "../schemas/user.schema";
 import {Model} from "mongoose";
@@ -10,7 +10,7 @@ import {Request} from "express";
 export class UsersController {
     constructor(
         @InjectModel(User.name) private userModel: Model<UserDocument>) {}
-    @Post()
+    @Post('register')
     registerUser(@Body() registerUserDto: RegisterUserDto){
         const user = new this.userModel({
            email: registerUserDto.email,

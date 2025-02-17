@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
 import {Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import {randomUUID} from "node:crypto";
 
 export interface UserDocument extends Document {
@@ -21,6 +21,9 @@ export class User {
 
     @Prop({required: true})
     password: string;
+
+    @Prop({required: true, default: 'user', enum: ['user', 'admin']})
+    role: string;
 
     @Prop({required: true})
     token: string;
