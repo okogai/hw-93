@@ -22,12 +22,18 @@ import { diskStorage } from 'multer';
 import {TokenAuthGuard} from "../token-auth/token-auth.guard";
 import {PermitAuthGuard} from "../permit-auth/permit-auth.guard";
 import {Roles} from "../permit-auth/permit.decorator";
+import {Album, AlbumDocument} from "../schemas/album.schema";
+import {Track, TrackDocument} from "../schemas/track.schema";
 
 @Controller('artists')
 export class ArtistsController {
   constructor(
     @InjectModel(Artist.name)
     private artistModel: Model<ArtistDocument>,
+    @InjectModel(Album.name)
+    private albumModel: Model<AlbumDocument>,
+    @InjectModel(Track.name)
+    private trackModel: Model<TrackDocument>,
   ) {}
 
   @Get()
@@ -121,9 +127,18 @@ export class ArtistsController {
   @UseGuards(PermitAuthGuard)
   @Roles('admin')
   async delete(@Param('id') id: string) {
-    const artist = await this.artistModel.findByIdAndDelete(id);
+    const artist = await this.artistModel.findById(id);
 
     if (!artist) throw new NotFoundException('Artist not Found');
+
+    const albums = await this.albumModel.find({ artist: artist._id });
+    const albumIds = albums.map(album => album._id);
+
+    await this.trackModel.deleteMany({ album: { $in: albumIds } });
+
+    await this.albumModel.deleteMany({ artist: artist._id });
+
+    await artist.deleteOne();
 
     return { message: 'Artist deleted successfully.' };
   }

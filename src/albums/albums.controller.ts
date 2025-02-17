@@ -22,12 +22,15 @@ import { extname } from 'node:path';
 import {TokenAuthGuard} from "../token-auth/token-auth.guard";
 import {PermitAuthGuard} from "../permit-auth/permit-auth.guard";
 import {Roles} from "../permit-auth/permit.decorator";
+import {Track, TrackDocument} from "../schemas/track.schema";
 
 @Controller('albums')
 export class AlbumsController {
   constructor(
     @InjectModel(Album.name)
     private albumModel: Model<AlbumDocument>,
+    @InjectModel(Track.name)
+    private trackModel: Model<TrackDocument>,
   ) {}
   @Get()
   async getAll() {
@@ -126,6 +129,10 @@ export class AlbumsController {
     const album = await this.albumModel.findById(id);
 
     if (!album) throw new NotFoundException('Album not found');
+
+    await this.trackModel.deleteMany({ album: album._id });
+
+    await album.deleteOne();
 
     return { message: 'Album deleted successfully.' };
   }
