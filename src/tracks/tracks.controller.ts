@@ -7,12 +7,15 @@ import {
   NotFoundException,
   Param,
   Patch,
-  Post,
+  Post, UseGuards,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Track, TrackDocument } from '../schemas/track.schema';
 import { CreateTrackDTO } from './create-track.dto';
+import {PermitAuthGuard} from "../permit-auth/permit-auth.guard";
+import {Roles} from "../permit-auth/permit.decorator";
+import {TokenAuthGuard} from "../token-auth/token-auth.guard";
 
 @Controller('tracks')
 export class TracksController {
@@ -34,6 +37,7 @@ export class TracksController {
     return track;
   }
   @Post()
+  @UseGuards(TokenAuthGuard)
   async create(@Body() trackData: CreateTrackDTO) {
     if (!trackData.title) throw new BadRequestException('Title is required');
     if (!trackData.album) throw new BadRequestException('Album is required');
@@ -52,6 +56,8 @@ export class TracksController {
     return await track.save();
   }
   @Patch(':id')
+  @UseGuards(PermitAuthGuard)
+  @Roles('admin')
   async update(@Param('id') id: string, @Body() updateData: CreateTrackDTO) {
     const track = await this.trackModel.findById(id);
 
@@ -69,6 +75,8 @@ export class TracksController {
     return track;
   }
   @Delete(':id')
+  @UseGuards(PermitAuthGuard)
+  @Roles('admin')
   async delete(@Param('id') id: string) {
     const track = await this.trackModel.findByIdAndDelete(id);
 

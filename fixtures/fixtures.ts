@@ -4,10 +4,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import {Artist, ArtistSchema} from "../src/schemas/artist.schema";
 import {Album, AlbumSchema} from "../src/schemas/album.schema";
 import {Track, TrackSchema} from "../src/schemas/track.schema";
+import {User, UserSchema} from "../src/schemas/user.schema";
 
 @Injectable()
 export class Fixtures {
     constructor(
+        @Inject(getModelToken(User.name)) private readonly userModel: mongoose.Model<User>,
         @Inject(getModelToken(Artist.name)) private readonly artistModel: mongoose.Model<Artist>,
         @Inject(getModelToken(Album.name)) private readonly albumModel: mongoose.Model<Album>,
         @Inject(getModelToken(Track.name)) private readonly trackModel: mongoose.Model<Track>,
@@ -19,12 +21,28 @@ export class Fixtures {
             const db = mongoose.connection;
 
             try {
+                await db.dropCollection('users');
                 await db.dropCollection('albums');
                 await db.dropCollection('artists');
                 await db.dropCollection('tracks');
             } catch (e) {
                 console.log('Collections were not present, skipping drop');
             }
+
+            await this.userModel.create([
+                {
+                    email: 'user',
+                    password: '123',
+                    token: crypto.randomUUID(),
+                    role: 'user',
+                },
+                {
+                    email: 'admin',
+                    password: '123',
+                    token: crypto.randomUUID(),
+                    role: 'admin',
+                },
+            ]);
 
             const [megMyers, korn, elliphant] = await this.artistModel.create([
                 { name: 'Meg Myers', photo: 'uploads/artists/meg_myers.jpg' },
@@ -61,6 +79,7 @@ export class Fixtures {
 
 (async () => {
     await new Fixtures(
+        mongoose.model<User>(User.name, UserSchema),
         mongoose.model<Artist>(Artist.name, ArtistSchema),
         mongoose.model<Album>(Album.name, AlbumSchema),
         mongoose.model<Track>(Track.name, TrackSchema),
